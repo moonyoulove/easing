@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easing</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #cube {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            position: absolute;
+            top: 12px;
+        }
+
+        #compare {
+            width: 50px;
+            height: 50px;
+            background-color: blue;
+            top: 100px;
+            position: absolute;
+        }
+
+        #line {
+            margin-top: 10px;
+            width: 1048px;
+            border: 1px solid black;
+        }
+
+        .text {
+            margin: 20px;
+            float: right;
+            height: 50px;
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="line"></div>
+    <div class="text">緩動</div>
+    <div class="text">勻速</div>
+    <div id="cube"></div>
+    <div id="compare"></div>
+    <script>
+        let cube = document.getElementById("cube");
+        let compare = document.getElementById("compare");
+        cube.style.left = "0px";
+        compare.style.left = "0px";
+        loop();
+
+        function loop() {
+            new Promise(function(resolve) {
+                easeInOut(cube, 1000, 300, 4);
+                easeInOut(compare, 1000, 300, 1, resolve);
+            }).then(function() {
+                return new Promise(function(resolve) {
+                    easeInOut(cube, -1000, 300, 4);
+                    easeInOut(compare, -1000, 300, 1, resolve);
+                });
+            }).then(function() {
+                loop();
+            });
+        }
+
+        function easeIn(e, d, t, n = 1, resolve) {
+            if (e.isMoving) {
+                return;
+            } else {
+                e.isMoving = true;
+            }
+            let x = parseFloat(e.style.left);
+            let i = 0;
+            move();
+
+            function move() {
+                if (i < t) {
+                    i++;
+                    e.style.left = x + Math.pow(i / t, n) * d + "px";
+                    setTimeout(move, 16);
+                } else {
+                    e.isMoving = false;
+                    if (resolve) {
+                        resolve();
+                    }
+                }
+            }
+        }
+
+        function easeOut(e, d, t, n = 1, resolve) {
+            if (e.isMoving) {
+                return;
+            } else {
+                e.isMoving = true;
+            }
+            let x = parseFloat(e.style.left);
+            let i = 0
+            let isEven = n % 2;
+            move();
+
+            function move() {
+                if (i < t) {
+                    i++;
+                    e.style.left = x + ((isEven ? 1 : -1) * Math.pow(i / t - 1, n) + 1) * d + "px";
+                    setTimeout(move, 16);
+                } else {
+                    e.isMoving = false;
+                    if (resolve) {
+                        resolve();
+                    }
+                }
+            }
+        }
+
+        function easeInOut(e, d, t, n, resolve) {
+            new Promise(function(resolve) {
+                easeIn(e, d / 2, t / 2, n, resolve);
+            }).then(function() {
+                return new Promise(function(resolve) {
+                    easeOut(e, d / 2, t / 2, n, resolve);
+                });
+            }).then(function() {
+                if (resolve) {
+                    resolve();
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
